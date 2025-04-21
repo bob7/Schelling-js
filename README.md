@@ -5,7 +5,7 @@ HTML/javascript code showing segregation in the 1D/2D Schelling models in real t
 
 Adapted from the older (but faster) []C++/OpenGL code(https://github.com/bob7/Schelling-Simulations). 
 
-![alt text](https://github.com/bob7/Schelling-js/blob/main/schel-js2.png)
+![alt text](https://github.com/bob7/Schelling-js/blob/main/schel-js3.png)
 
 Phase transitions were shown by G. Barmpalias, R. Elwes and A. Lewis-Pye in:
 
