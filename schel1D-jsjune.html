@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schelling 1D Animation</title>
+<style>
+	
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #222;
+  font-family: Arial, sans-serif;
+}
+
+#container {
+  display: flex;
+  flex-direction: column; 
+  flex: 1;
+  overflow: hidden;
+}
+
+#controls {
+	padding: 0.5rem;
+	background-color: #333;
+	display:grid;
+	grid-template-columns: auto auto auto auto;
+	color:#eee;
+	align-items:center;
+	justify-content:center;
+}
+
+#controls div {
+  background-color: #333;
+  color:#eee;
+  border: 0px solid black;
+  padding: 10px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+#controls label {
+  font-size: 0.9em;
+  white-space: nowrap;
+  color:#eee;
+}
+
+#params {
+	background-color: #333;
+	display:grid;
+    border: none;
+    border-radius: 14px;
+	padding:1rem;
+	grid-template-columns: auto auto;
+	color:#eee;
+}
+
+#params div {
+  border: 0px solid black;
+  padding: 10px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+#paramForm{}
+
+
+#canvas{
+	display:flex;
+    height: min(calc(100vh - 30px), calc(100vw - 30px));
+/*	width:auto;*/
+    opacity: 0.9;
+}
+
+#startButton, #rulesButton, #paramsButton {
+    width:auto;
+    height:1.6rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-right:1rem;
+    background-color: #333;	
+}
+
+#rulesButton:hover, #startButton:hover, #paramsButton:hover {
+    background: #0056b3;
+}
+
+#numbhum, #w, #tau, #redper{
+	display: inline-block;
+	width: 6rem;
+	color:#eee;
+}
+
+.animation-container {
+	display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 4rem;
+  height: 0.2rem;
+  border-radius: 5px;
+  background: #aaa;
+  outline: none;
+  transition: opacity 0.2s;
+}
+
+.popup {
+  position: fixed;  
+  top: 30%;
+  left: 30%;
+  line-height:1.8;
+  transform: translate(-20%, -32%);
+  background: #222;
+  color: #ddd;
+  padding: 2rem;
+  border-radius: 8px;
+  z-index: 10;
+  display: none;
+  font-size: 0.9em;
+  overflow-y: hidden;
+  transition: 1s;
+  
+}
+
+.popup h2 {
+  margin-top: 0;
+  font-size: 1.2em;
+}
+
+.popup h3 {
+  margin-top: 0;
+  line-height:1;
+  font-size: 1em;
+  font-style:italic;
+}
+.popup button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #555;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+}
+
+.popup button:hover {
+  background-color: #777;
+}
+
+.overlay1 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9;
+  display: none;
+  overflow-y: hidden;
+  transition: 0.5s;
+}
+
+.overlay {
+  height: 0%;
+  width: 100%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0, 0.2);
+  overflow-y: hidden;
+  transition: 0.5s;
+}
+
+.overlay-content {
+  margin-left:auto; margin-right:auto;
+  width: 20rem;
+  margin-top: 10%;
+  color:#eee;
+}
+
+.overlay a {
+  padding: 8px;
+  text-decoration: none;
+  font-size: 1rem;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.overlay a:hover, .overlay a:focus {
+  color: #f1f1f1;
+}
+
+.overlay .closebtn {
+  position: absolute;
+  top: 20px;
+  right: 45px;
+  font-size: 1rem;
+}
+
+@media screen and (max-height: 450px) {
+  .overlay {overflow-y: auto;}
+  .overlay a {font-size: 20px}
+  .overlay .closebtn {
+  font-size: 40px;
+  top: 15px;
+  right: 35px;
+  }
+.popup {line-height:1; padding: 1rem; font-size: 0.3em;}
+.popup h2 {margin-top: 0; font-size: 0.5em;}
+.popup h3 {font-size: 0.4em;}
+}
+</style></head><body>
+
+<div id="container"><div id="controls">
+<button id="startButton" type="button">Start</button>
+<button id="rulesButton">Rules</button>
+<button id="paramsButton" onclick="openNav()">Tune</button>
+</div></div>
+
+<div class="animation-container"><canvas id="canvas" width="800" height="800"></canvas></div>
+
+</div>
+
+<div id="myNav" class="overlay"><a href="javascript:void(0)" class="closebtn" onclick="closeNav()"></a>
+
+<div class="overlay-content"><form id="paramForm"><div id="params">
+<div><label for="numbhum">Size: <span id="numbhum-value">4000</span></label><br></div>
+<div><input type="range" id="numbhum" name="numbhum" min="1000" max="20000" value="4000" step="100"></div>
+<div><label for="w">Radius: <span id="w-value">50</span></label><br></div>
+<div><input type="range" id="w" name="w" min="1" max="100" value="50" step="1"></div>
+<div><label for="tau">Tolerance: <span id="tau-value">0.4</span></label><br></div>
+<div><input type="range" id="tau" name="tau" min="0.0" max="1.0" value="0.4" step="0.01"></div>
+<div><label for="redper">Minority: <span id="redper-value">0.5</span></label><br></div>
+<div><input type="range" id="redper" name="redper" min="0.0" max="1.0" value="0.5" step="0.01"></div>
+</div></form></div>
+</div>
+
+
+<div id="rulesPopup" class="popup">
+<h2>Schelling's Segregation Model - Rules</h2>
+<p>This simulation models a version of Schelling's segregation model in a 1D circular space.</p>
+<h3>Agents and Preferences</h3>
+<ul>
+<li>There are two types of agents: Red and Blue.</li>
+<li>Each agent has a tolerance level between 0.0 and 1.0.</li>
+<li>An agent is considered "happy" if the proportion of similar neighbors within its neighborhood (defined by the radius w) is greater than or equal to its tolerance.</li>
+<li>The neighborhood extends w agents to the left and $w$ agents to the right (considering the circular boundary). The agent itself is not counted as a neighbor.</li>
+</ul>
+<h3>Dynamics</h3>
+<ul>
+<li>If there are any "unhappy" Red and Blue agents, the simulation randomly selects one unhappy Red agent and one unhappy Blue agent.</li>
+<li>These two unhappy agents swap their positions in the 1D space.</li>
+<li>After the swap, the happiness of the neighbors around the swapped positions is re-evaluated.</li>
+<li>The simulation continues with random swaps between unhappy Red and Blue agents until no unhappy agents of either color remain, or a state of total segregation (all agents of the same color are clustered together) is reached.</li>
+</ul>
+<h3>Parameters</h3>
+<ul>
+<li><strong>Size:</strong> The total number of agents in the 1D space.</li>
+<li><strong>Radius:</strong> The number of neighbors to the left and right that each agent considers.</li>
+<li><strong>Tolerance:</strong> The threshold for happiness (proportion of similar neighbors).</li>
+<li><strong>Minority:</strong> The initial proportion of Red agents in the space.</li>
+</ul>
+
+</div>
+<div id="popupOverlay" class="overlay1"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js"></script>
+
+<script>
+function openNav() {
+  document.getElementById("myNav").style.height = "100%";
+}
+
+function closeNav() {
+  document.getElementById("myNav").style.height = "0%";
+}
+
+// Close overlay when clicking on it, except for overlay-content
+document.getElementById("myNav").addEventListener("click", function(event) {
+  closeNav();
+});
+
+// Prevent clicks inside overlay-content from closing the overlay
+document.querySelector(".overlay-content").addEventListener("click", function(event) {
+  event.stopPropagation();
+});
+</script>
+     
+<!-- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'934d45d10ab21357',t:'MTc0NTQxMDM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script> -->
+
+<script>
+        const contrastThreshold = 4.5;
+        let color1 = 'rgb(0,0,0)';
+        let color2 = 'rgb(0,0,0)';
+		let color3 = 'rgb(34,34,34)';
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const paramForm = document.getElementById('paramForm');
+        const rulesButton = document.getElementById('rulesButton');
+        const rulesPopup = document.getElementById('rulesPopup');
+        const popupOverlay = document.getElementById('popupOverlay');
+        let numbhum = 4000, w = 50, tau = 0.4, redper = 0.5, roundrep = 5;
+        const convar = 1, torvar = 0, ringpar = 100, testmode = 0;
+        let swapmax = 500 * numbhum;
+        let numbhumArray = [[], []], biasArray = [], unhapRed = [], unhapBlue = [], changedhum = [];
+        let roundvar = 0, iround = 0, rednu = 0, bluenu = 0, unsucswap = 0;
+        let flagend = false, flagstart = false;
+        let swapx, swapy;
+		let r1 = 0; let r2 = 0; let r3 = 0;
+		let g1 = 0; let g2 = 0; let g3 = 0;
+		
+        const GL_PI = 3.141592653;
+        do {
+          color1 = chroma.random().brighten(2).saturate(3).rgb();
+          color2 = chroma.random().brighten(2).saturate(3).rgb();
+        } while (chroma.contrast(color1, color2) < contrastThreshold);
+
+		r1 = color1[0]; r2 = color1[1]; r3 = color1[2];
+		g1 = color2[0]; g2 = color2[1]; g3 = color2[2];
+
+        function updateSliderValue(sliderId, valueId) {
+            const slider = document.getElementById(sliderId);
+            const valueSpan = document.getElementById(valueId);
+            valueSpan.textContent = slider.value;
+        }
+
+        document.getElementById('numbhum').addEventListener('input', () => updateSliderValue('numbhum', 'numbhum-value'));
+        document.getElementById('w').addEventListener('input', () => updateSliderValue('w', 'w-value'));
+        document.getElementById('tau').addEventListener('input', () => updateSliderValue('tau', 'tau-value'));
+        document.getElementById('redper').addEventListener('input', () => updateSliderValue('redper', 'redper-value'));
+
+        function initializeSimulation() {
+	        do {
+	          color1 = chroma.random().brighten(2).saturate(3).rgb();
+	          color2 = chroma.random().brighten(2).saturate(3).rgb();
+	        } while (chroma.contrast(color1, color2) < contrastThreshold);
+
+			r1 = color1[0]; r2 = color1[1]; r3 = color1[2];
+			g1 = color2[0]; g2 = color2[1]; g3 = color2[2];
+			
+            numbhum = parseInt(paramForm.numbhum.value);
+            w = parseInt(paramForm.w.value);
+            tau = parseFloat(paramForm.tau.value);
+            redper = parseFloat(paramForm.redper.value);
+
+            if (numbhum <= 0) numbhum = 1000;
+            if (w <= 0) w = 1;
+            if (tau < 0 || tau > 1) tau = 0.4;
+            if (redper < 0 || redper > 1) redper = 0.5;
+
+            swapmax = 500 * numbhum;
+            spstring0 = `n=<span class="math-inline">\{numbhum\}, w\=</span>{w}, tau=${tau}`;
+            numbhumArray = [[], []];
+            biasArray = [];
+            unhapRed = [];
+            unhapBlue = [];
+            changedhum = [];
+            roundvar = 0;
+            iround = 0;
+            rednu = 0;
+            bluenu = 0;
+            unsucswap = 0;
+            flagend = false;
+            flagstart = true;
+            initArrays();
+            draw();
+            animate();
+        }
+
+        function initArrays() {
+            numbhumArray[0] = new Array(numbhum).fill(0);
+            numbhumArray[1] = new Array(numbhum).fill(0);
+            biasArray = new Array(numbhum).fill(0);
+            unhapRed = [], unhapBlue = [], changedhum = [];
+            rednu = 0, bluenu = 0;
+            for (let i = 0; i < numbhum; i++) {
+                if (Math.random() < redper) {
+                    numbhumArray[0][i] = 1;
+                    numbhumArray[1][i] = 1;
+                    rednu++;
+                } else {
+                    numbhumArray[0][i] = -1;
+                    numbhumArray[1][i] = -1;
+                    bluenu++;
+                }
+            }
+            buildInitBiasArr();
+            // console.log(`Initial: ${rednu} red, ${bluenu} blue, ${unhapRed.length} unhappy red, ${unhapBlue.length} unhappy blue`);
+        }
+
+        function signfu(argt, argn) {
+            if (argt < 0) return argn + argt;
+            if (argt >= argn) return argt - argn;
+            return argt;
+        }
+
+        function SegregFun() {
+            let segvar = 0;
+            if (numbhumArray[1][0] + numbhumArray[1][numbhum - 1] === 0) segvar = 1;
+            for (let iseg = 0; iseg < numbhum - 1; iseg++) {
+                if (numbhumArray[1][iseg] + numbhumArray[1][iseg + 1] === 0) segvar++;
+            }
+            return segvar;
+        }
+
+        function buildInitBiasArr() {
+            let biasvar = 0;
+            for (let i = 0; i < 2 * w + 1; i++) {
+                biasvar += numbhumArray[1][signfu(i - w, numbhum)];
+            }
+            biasArray[0] = biasvar;
+            if (numbhumArray[1][0] === 1 && biasArray[0] < (2 * w + 1) * (2 * tau - 1)) {
+                unhapRed.push(0);
+                numbhumArray[0][0] = 2;
+            } else if (numbhumArray[1][0] === -1 && biasArray[0] > (2 * w + 1) * (1 - 2 * tau)) {
+                unhapBlue.push(0);
+                numbhumArray[0][0] = -2;
+            }
+            for (let i = 0; i < numbhum - 1; i++) {
+                biasArray[i + 1] = biasArray[i] + numbhumArray[1][signfu(i + 1 + w, numbhum)] - numbhumArray[1][signfu(i - w, numbhum)];
+                if (numbhumArray[1][i + 1] === 1 && biasArray[i + 1] < (2 * w + 1) * (2 * tau - 1)) {
+                    unhapRed.push(i + 1);
+                    numbhumArray[0][i + 1] = 2;
+                } else if (numbhumArray[1][i + 1] === -1 && biasArray[i + 1] > (2 * w + 1) * (1 - 2 * tau)) {
+                    unhapBlue.push(i + 1);
+                    numbhumArray[0][i + 1] = -2;
+                }
+            }
+        }
+
+        function doSwapFollowConv() {
+            if (unhapRed.length === 0 || unhapBlue.length === 0) {
+                // console.log('No unhappy agents to swap');
+                flagend = true;
+                return;
+            }
+            let x = Math.floor(Math.random() * unhapRed.length);
+            let y = Math.floor(Math.random() * unhapBlue.length);
+            swapx = unhapRed[x];
+            swapy = unhapBlue[y];
+            if (tau > 0.5 && convar === 1) {
+                while ((biasArray[swapx] > biasArray[swapy] + 2) ||
+                       (Math.abs(swapx - swapy) <= w) ||
+                       (numbhum - Math.abs(swapx - swapy) <= w)) {
+                    unsucswap++;
+                    x = Math.floor(Math.random() * unhapRed.length);
+                    y = Math.floor(Math.random() * unhapBlue.length);
+                    swapx = unhapRed[x];
+                    swapy = unhapBlue[y];
+                }
+            }
+            numbhumArray[1][swapx] = -1;
+            numbhumArray[1][swapy] = 1;
+            changedhum.push({ round: iround, pos: swapx, value: -1 });
+            changedhum.push({ round: iround, pos: swapy, value: 1 });
+            unhapRed.splice(x, 1);
+            unhapBlue.splice(y, 1);
+            // console.log(`Swap ${swapx} with ${swapy}, Round: ${roundvar}, Unhappy Red: ${unhapRed.length}, Unhappy Blue: ${unhapBlue.length}`);
+        }
+
+        function updateBiasLists() {
+            for (let i = 0; i < 2 * w + 1; i++) {
+                let biasvarR = signfu(swapx - w + i, numbhum);
+                let biasvarB = signfu(swapy - w + i, numbhum);
+                let biasRtargOld = biasArray[biasvarR];
+                let biasBtargOld = biasArray[biasvarB];
+                if (Math.abs(biasvarR - swapy) > w && numbhum - Math.abs(biasvarR - swapy) > w) {
+                    biasArray[biasvarR] -= 2;
+                    let biasRtargNew = biasRtargOld - 2;
+                    if (numbhumArray[1][biasvarR] === 1 &&
+                        biasRtargNew < (2 * tau - 1) * (2 * w + 1) &&
+                        biasRtargOld >= (2 * tau - 1) * (2 * w + 1)) {
+                        unhapRed.push(biasvarR);
+                    } else if (numbhumArray[1][biasvarR] === -1 &&
+                               biasRtargOld > (2 * w + 1) * (1 - 2 * tau) &&
+                               biasvarR !== swapx &&
+                               biasRtargNew <= (2 * w + 1) * (1 - 2 * tau)) {
+                        unhapBlue = unhapBlue.filter(pos => pos !== biasvarR);
+                    }
+                }
+                if (Math.abs(biasvarB - swapx) > w && numbhum - Math.abs(biasvarB - swapx) > w) {
+                    biasArray[biasvarB] += 2;
+                    let biasBtargNew = biasBtargOld + 2;
+                    if (numbhumArray[1][biasvarB] === 1 &&
+                        biasBtargNew >= (2 * tau - 1) * (2 * w + 1) &&
+                        biasBtargOld < (2 * tau - 1) * (2 * w + 1) &&
+                        biasvarB !== swapy) {
+                        unhapRed = unhapRed.filter(pos => pos !== biasvarB);
+                    } else if (numbhumArray[1][biasvarB] === -1 &&
+                               biasBtargOld <= (2 * w + 1) * (1 - 2 * tau) &&
+                               biasBtargNew > (2 * w + 1) * (1 - 2 * tau)) {
+                        unhapBlue.push(biasvarB);
+                    }
+                }
+            }
+            if (biasArray[swapx] > (2 * w + 1) * (1 - 2 * tau)) {
+                unhapBlue.push(swapx);
+            }
+            if (biasArray[swapy] < (2 * w + 1) * (2 * tau - 1)) {
+                unhapRed.push(swapy);
+            }
+        }
+
+        function loopStopCondition() {
+            if (unhapRed.length === 0) {
+                // console.log(`Stopped after ${roundvar} swaps: No unhappy red humans`);
+                return 0;
+            }
+            if (unhapBlue.length === 0) {
+                // console.log(`Stopped after ${roundvar} swaps: No unhappy blue humans`);
+                return 0;
+            }
+            if (SegregFun() === 2) {
+                // console.log(`Stopped after ${roundvar} swaps: Total segregation`);
+                return 0;
+            }
+            return 1;
+        }
+
+        function loopMainFeed() {
+            if (loopStopCondition() === 1) {
+                doSwapFollowConv();
+                if (!flagend) {
+                    updateBiasLists();
+                    roundvar++;
+                    iround++;
+                    if (roundvar % roundrep === 0 || flagend) {
+                        draw();
+                    }
+                }
+            } else {
+                if (!flagend) {
+                    // console.log(`Final: ${unhapRed.length} unhappy red, ${unhapBlue.length} unhappy blue, ${SegregFun()} runs, ${roundvar} swaps`);
+                    flagend = true;
+                    draw();
+                }
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#222';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            const incrPar = 2 * GL_PI / numbhum;
+            const innerRadius = 1, outerRadius = 330;
+
+            for (let ig = 0, angle = 0; ig < numbhum; ig++, angle += incrPar) {
+                const x = innerRadius * Math.sin(angle);
+                const y = innerRadius * Math.cos(angle);
+                const x1 = (innerRadius + 15) * Math.sin(angle);
+                const y1 = (innerRadius + 15) * Math.cos(angle);
+                const x2 = (innerRadius + 15) * Math.sin(angle + incrPar);
+                const y2 = (innerRadius + 15) * Math.cos(angle + incrPar);
+                const x3 = innerRadius * Math.sin(angle + incrPar);
+                const y3 = innerRadius * Math.cos(angle + incrPar);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.lineTo(x3, y3);
+                ctx.closePath();
+                // ctx.fillStyle = numbhumArray[0][ig] > 0 ? 'rgb(255, 99, 71)' : 'rgb(173, 255, 173)';
+                ctx.fillStyle = numbhumArray[0][ig] > 0 ? `rgb(${r1}, ${r2}, ${r3})` : `rgb(${g1}, ${g2}, ${g3})`;
+                // ctx.fillStyle = (numbhumArray[i][j] === 1) ? `rgb(${r1}, ${r2}, ${r3})` : `rgb(${g1}, ${g2}, ${g3})`;
+                ctx.fill();
+                if (Math.abs(numbhumArray[0][ig]) > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo((innerRadius + 20) * Math.sin(angle), (innerRadius + 20) * Math.cos(angle));
+                    ctx.lineTo((innerRadius + 25) * Math.sin(angle), (innerRadius + 25) * Math.cos(angle));
+                    ctx.strokeStyle = 'white';
+                    ctx.stroke();
+                }
+            }
+
+            ctx.beginPath();
+            for (let ig = 0, angle = 0; ig < numbhum; ig++, angle += incrPar) {
+                const x = outerRadius * Math.sin(angle);
+                const y = outerRadius * Math.cos(angle);
+                const x1 = (outerRadius + 30) * Math.sin(angle);
+                const y1 = (outerRadius + 30) * Math.cos(angle);
+                const x2 = (outerRadius + 30) * Math.sin(angle + incrPar);
+                const y2 = (outerRadius + 30) * Math.cos(angle + incrPar);
+                const x3 = outerRadius * Math.sin(angle + incrPar);
+                const y3 = outerRadius * Math.cos(angle + incrPar);
+                ctx.moveTo(x, y);
+                ctx.lineTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.lineTo(x3, y3);
+                ctx.closePath();
+                // ctx.fillStyle = numbhumArray[1][ig] === 1 ? 'rgb(255, 99, 71)' : 'rgb(173, 255, 173)';
+                ctx.fillStyle = numbhumArray[1][ig] === 1 ? `rgb(${r1}, ${r2}, ${r3})` : `rgb(${g1}, ${g2}, ${g3})`;
+                ctx.fill();
+                ctx.beginPath();
+            }
+            ctx.closePath();
+
+            for (let ig = 0; ig < changedhum.length; ig++) {
+                const radiousvar = 40 + (290 * (changedhum[ig].round / (iround + 1)));
+                const angle = incrPar * changedhum[ig].pos;
+                const x = radiousvar * Math.sin(angle);
+                const y = radiousvar * Math.cos(angle);
+                ctx.beginPath();
+                ctx.arc(x, y, 0.95, 0, 2 * Math.PI);
+                // ctx.fillStyle = changedhum[ig].value === 1 ? 'rgb(255, 80, 60)' : 'rgb(173, 255, 173)';
+                ctx.fillStyle = changedhum[ig].value === 1 ? `rgb(${r1}, ${r2}, ${r3})` : `rgb(${g1}, ${g2}, ${g3})`;
+                ctx.fill();
+            }
+
+            ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'g') {
+                flagstart = true;
+                if (flagstart) animate();
+            } else if (event.key === 'q') {
+                flagend = true;
+            }
+        });
+
+        startButton.addEventListener('click', () => {
+            initializeSimulation();
+        });
+
+        function animate() {
+            if (flagstart && !flagend) {
+                loopMainFeed();
+                requestAnimationFrame(animate);
+            }
+        }
+
+        rulesButton.addEventListener('click', () => {
+            rulesPopup.style.display = 'block';
+            popupOverlay.style.display = 'block';
+        });
+
+        popupOverlay.addEventListener('click', () => {
+            rulesPopup.style.display = 'none';
+            popupOverlay.style.display = 'none';
+        });
+		initArrays(); draw();
+    </script>
