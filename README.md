@@ -3,7 +3,7 @@ Schelling segregation in real time (in the browser)
 
 HTML/javascript code showing segregation in the 1D/2D Schelling models in real time.
 
-Adapted from the older (but faster) []C++/OpenGL code(https://github.com/bob7/Schelling-Simulations). 
+Adapted from the older (but faster) [C/OpenGL code](https://github.com/bob7/Schelling-Simulations). 
 
 ![alt text](https://github.com/bob7/Schelling-js/blob/main/schel-js3.png)
 
