@@ -5,7 +5,7 @@ HTML/javascript code showing segregation in the 1D/2D Schelling models in real t
 
 Adapted from the older (but faster) [C/OpenGL code](https://github.com/bob7/Schelling-Simulations). 
 
-![alt text](https://github.com/bob7/Schelling-js/blob/main/schel-js3.png)
+<p><img width="600"  src="https://github.com/bob7/Schelling-js/blob/main/schel-js3.png"></p>
 
 Phase transitions were shown by G. Barmpalias, R. Elwes and A. Lewis-Pye in:
 
@@ -16,5 +16,4 @@ Phase transitions were shown by G. Barmpalias, R. Elwes and A. Lewis-Pye in:
 - [Unperturbed Schelling Segregation in 2D and 3D.](https://arxiv.org/abs/1504.03809) J. Stat. Physics (2016 )
 
 - [Tipping Points in 1D Schelling Models with Switching Agents.](http://barmpalias.net/papers/tipping.pdf) J. Stat. Physics 2015
-
 
