@@ -89,7 +89,7 @@ History progresses outward: early transitions lie near the center and recent tra
 
 A browser-based visualization of a two-type Schelling segregation model. Agents occupy a square grid and exchange positions according to local preferences, allowing you to watch clusters develop from a random initial arrangement.
 
-<p margin-top="400px" align="center"><img width="650"  src="./2D.gif"></p>
+<p margin-top="400px" align="center"><img width="550"  src="./2D.gif"></p>
 
 ## Controls
 
