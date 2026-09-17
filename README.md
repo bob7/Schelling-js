@@ -83,18 +83,6 @@ One swap is attempted per animation callback, and the visualization normally red
 
 History progresses outward: early transitions lie near the center and recent transitions lie near the outer ring. A dot's radius is calculated as `40 + 290 × transitionIndex / (currentTransitionCount + 1)`. As the run grows, earlier dots move inward because the entire history is rescaled. These dots are a record of position changes, not paths traced by individual agents.
 
-## Export details
-
-SVG exports use the same drawing geometry as the canvas at its native 1,000 × 800 size. They contain vector paths and can be scaled or edited in a vector graphics application.
-
-GIF exports are 500 × 400 pixels with a 256-color palette. They include the initial frame, subsequent displayed stages, and the current stage at export time. They do not include a separate frame for every individual swap. Playback loops, using an 80 ms delay per frame and a one-second hold on the final frame; time spent paused is not recorded. Palette conversion can slightly change the colors compared with the canvas or SVG.
-
-Both exports download locally as `schelling-<transition-count>.svg` or `schelling-<transition-count>.gif`. Exporting does not reset or pause a running simulation. Compressed GIF frames are retained in browser memory for the current run, so long runs can use more memory.
-
-## Current limitation
-
-For tolerance above 0.5, the pair-selection loop has no retry limit. If no eligible pair can be found, it can block the browser rather than finish the simulation. The declared `swapmax` value is not currently enforced as a stopping condition.
-
 ---
 
 # Schelling 2D simulation
@@ -159,27 +147,6 @@ For tolerance above 0.5, `swapTest` rejects a pair if the bias at the selected `
 
 After `N²` unsuccessful random retries, the code attempts an exhaustive search over the unhappy pairs. If that search finds no permitted pair, it sets the halt flag.
 
-### Animation and stopping
-
-Each animation callback performs up to 40 transition attempts, redraws the grid, and records a frame if the successful-swap count changed. The recording includes the initial grid; it captures displayed stages rather than every individual swap.
-
-The simulation stops when either type's unhappy list is empty or the exhaustive search sets the halt flag. Stopping does not necessarily mean every agent is happy. Although a `swapmax` variable exists, the animation loop does not enforce a maximum swap count.
-
-GIF exports replay the recorded stages at 20 frames per second, hold the last stage for one second, and loop continuously. SVG and GIF exports contain the grid without the toolbar.
-
-## Implementation notes
-
-HTML, CSS, simulation logic, canvas rendering, and export code live in `Schel2D/schel2D-js.html`. Useful entry points are `resetSimulation`, `buildInitBiasArr`, `doSwapFollowConv`, `updateBiasLists`, and `animate`.
-
-The in-app rules text describes some behavior differently from the implementation: the actual grid is fully occupied, transitions swap opposite types, and neighborhoods include the center cell and use the configured radius. The description above follows the code.
-
-The current transition implementation also has limitations that matter when interpreting results:
-
-- The exhaustive-search result omits `exhaustswap` and the blue-list index expected by its caller, so a permitted pair found through that fallback is not applied.
-- The incremental unhappy-list update contains inconsistent coordinate and membership checks that can leave the lists out of sync with the grid.
-
-These behaviors should be corrected and validated before treating the app as a quantitative reference implementation of the model.
-
 ---
 
 # Schelling 2D in 3D
@@ -209,11 +176,3 @@ Drag the canvas to rotate. Arrow keys translate the view; `p` / `P` decrease/inc
 5. For `tau > 0.5`, the existing constrained-swap rule rejects pairs within one another's neighborhoods and pairs whose red-site bias is at least the blue-site bias plus two. Rejected selections count toward a retry limit. Once that limit is reached, the process stops without executing the rejected swap.
 6. After an accepted swap, local bias values and unhappy lists are updated, and both changed cells are added to the 3D history. Up to ten swaps are performed per animation frame.
 7. The run ends when either unhappy list is empty, after `500 × numbhum` swaps, or after that many rejected selections. Ending does not necessarily mean everyone is happy or complete segregation has occurred.
-
-## Export details
-
-SVG projects the same point geometry and camera transformation used by WebGL and orders the points by depth. Browser rasterization can differ slightly from WebGL at point edges.
-
-GIF records each displayed simulation stage (up to ten swaps per stage), including the initial and final stages, rather than every individual swap. Frames use a fixed aspect ratio captured at start, a maximum width of 640 pixels, and a 256-color RGB332 palette. Resized views are fitted into that frame. Playback uses 80 ms per stage and holds the final stage for one second; pause durations are omitted. An export before any swaps contains one frame. Exporting keeps the simulation state intact.
-
-The GIF encoder is embedded in the HTML and stores compressed frames in memory. Long runs or large grids can consume substantial memory because both swap history and animation frames are retained.
