@@ -25,7 +25,7 @@ An interactive visualization of a one-dimensional Schelling segregation model. T
 
 The app is contained in [schel1D-js.html](Schel1D/schel1D-js.html), with its HTML, styles, simulation logic, and export code in one file. It runs in the browser without a build step or backend.
 
-<p margin-top="400px" align="center"><img width="650"  src="./1D.gif"></p>
+<p margin-top="400px" align="center"><img width="550"  src="./1D.gif"></p>
 
 ## Running the app
 
