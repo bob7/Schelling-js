@@ -91,12 +91,6 @@ A browser-based visualization of a two-type Schelling segregation model. Agents 
 
 <p margin-top="400px" align="center"><img width="650"  src="./2D.gif"></p>
 
-## Run the app
-
-Open `Schel2D/schel2D-js.html` in a modern browser. No build step or backend is required. The page loads Chroma.js from a CDN for color generation, so an internet connection is needed for that dependency, particularly when resetting or changing parameters.
-
-`Schel2D/example.html` is a separate 1D simulation used as the visual reference for the tune panel and toolbar highlights.
-
 ## Controls
 
 | Control | Action |
@@ -151,9 +145,7 @@ After `N²` unsuccessful random retries, the code attempts an exhaustive search 
 
 # Schelling 2D in 3D
 
-Open `Schel2Din3D/schel2Din3D-js.html` in a modern browser with WebGL enabled. Keep the bundled `chroma.min.js` beside the HTML file. No installation, server, or network connection is required. `Schel2Din3D/example.html` is the reference for the control styling.
-
-The app simulates two populations on a square grid and displays their evolution as a 3D point scene. The initial grid lies at depth zero; the current grid moves along the depth axis as swaps accumulate. Colored points between them mark the new occupants of swapped cells, showing the transition history. On page load and reset, the two display colors are randomized using the same Chroma.js logic as `example.html`: random colors brightened by 2 and saturated by 3, with a minimum contrast ratio of 4.5. Red and blue below refer to population identities, regardless of their display colors.
+The app simulates two populations on a square grid and displays their evolution as a 3D point scene. The initial grid lies at depth zero; the current grid moves along the depth axis as swaps accumulate. Colored points between them mark the new occupants of swapped cells, showing the transition history.
 
 <p margin-top="400px" align="center"><img width="650"  src="./2Din3D.gif"></p>
 
